@@ -6,10 +6,13 @@ import requests
 import settings
 
 sheet = GSpreadsheet(settings.SOURCE)
+print sheet.fieldnames
 
 for row in sheet:
-    print row
+    print "* %s" % row['package']
+    raw = None
     url = row['url']
+    raw_url = 'https://raw.github.com/' + '/'.join(url.rsplit('/', 2)[1:]) + '/master/setup.py'
     if row['setup.pyurl'] is None:
         setup_url = url + '/blob/master/setup.py'
         response = requests.head(setup_url)
@@ -23,3 +26,7 @@ for row in sheet:
     if row['makefile'] is None:
         response = requests.head(url + '/blob/master/Makefile')
         row['makefile'] = "1" if response.status_code == 200 else "0"
+    if row['lines'] is None:
+        if raw is None:
+            raw = requests.get(raw_url)
+        row['lines'] = str(raw.content.count('\n') + 1)
