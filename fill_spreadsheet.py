@@ -30,3 +30,14 @@ for row in sheet:
         if raw is None:
             raw = requests.get(raw_url)
         row['lines'] = str(raw.content.count('\n') + 1)
+    if row['docstring'] is None:
+        if raw is None:
+            raw = requests.get(raw_url)
+        docstring = []
+        for i, line in enumerate(raw.content.splitlines()):
+            if line.rstrip() == '"""':
+                docstring.append(i)
+        if docstring:
+            row['docstring'] = str(docstring[1] - docstring[0] - 1)
+        else:
+            row['docstring'] = '-'
